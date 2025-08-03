@@ -1,0 +1,31 @@
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background: #f0f0f0;
+  padding: 40px;
+}
+
+input[type='file'] {
+  margin: 20px 0;
+}
+
+canvas {
+  background: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  max-width: 100vw;
+  max-height: 50vh;
+  object-fit: contain;
+  display: block;
+  margin: auto;
+}
+
+button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.hidden {
+  display: none;
+}

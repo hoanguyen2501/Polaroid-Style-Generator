@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Polaroid Frame Generator</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <h1>Polaroid Frame Generator</h1>
+    <input type="file" accept="image/*" id="upload" />
+    <div>
+      <span>Choose your template</span>
+      <select id="template">
+        <option value="polaroid">Polaroid</option>
+        <option value="normal" selected>Normal</option>
+      </select>
+    </div>
+    <div>
+      <span>Choose your aspect ratio</span>
+      <select id="aspect">
+        <option value="45" selected>4:5</option>
+        <option value="43">4:3</option>
+        <option value="34">3:4</option>
+        <option value="32">3:2</option>
+        <option value="11">1:1</option>
+      </select>
+      <span>Border size (px)</span>
+      <input type="number" id="border-thickness" value="40"/>
+    </div>
+    <br />
+    <canvas id="canvas" class="hidden"></canvas>
+    <br />
+    <button id="download" class="hidden">Download</button>
+
+    <script src="index.js"></script>
+  </body>
+</html>
