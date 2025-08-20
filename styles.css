@@ -1,31 +1,129 @@
-body {
-  font-family: Arial, sans-serif;
-  text-align: center;
-  background: #f0f0f0;
-  padding: 40px;
+/* Reset some defaults */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-input[type='file'] {
+body {
+  font-family: system-ui, sans-serif;
+  background: #f9f9f9;
+  color: #333;
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+}
+
+#main {
+  max-width: 800px;
+  width: 100%;
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  text-align: center;
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+}
+
+input[type='file'],
+select,
+input[type='number'],
+button {
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  width: 100%;
+  max-width: 100%;
+  padding: 0.6rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+/* Label-like spans */
+#main span {
+  display: block;
+  margin-top: 0.8rem;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+/* Canvas */
+#canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 1rem auto;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+/* Button */
+button {
+  background: #007bff;
+  color: white;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+button:hover {
+  background: #0056b3;
+}
+
+p.hidden,
+button.hidden,
+canvas.hidden {
+  display: none;
+}
+
+#slideshow {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
   margin: 20px 0;
 }
 
-canvas {
-  background: #fff;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  max-width: 100vw;
-  max-height: 50vh;
-  object-fit: contain;
-  display: block;
-  margin: auto;
-}
-
-button {
-  margin-top: 20px;
-  padding: 10px 20px;
-  font-size: 16px;
+#slideshow button {
+  background: #0077ff;
+  color: #fff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
   cursor: pointer;
 }
 
-.hidden {
-  display: none;
+#slideshow button:hover {
+  background: #005ecc;
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  #main {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 1.3rem;
+  }
+
+  input[type='file'],
+  select,
+  input[type='number'],
+  button {
+    font-size: 0.9rem;
+    padding: 0.5rem;
+  }
 }

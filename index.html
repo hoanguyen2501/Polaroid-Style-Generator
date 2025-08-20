@@ -6,32 +6,45 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <h1>Polaroid Frame Generator</h1>
-    <input type="file" accept="image/*" id="upload" />
-    <div>
-      <span>Choose your template</span>
-      <select id="template">
-        <option value="polaroid" selected>Polaroid</option>
-        <option value="normal">Normal</option>
-      </select>
-    </div>
-    <div>
-      <span>Choose your aspect ratio</span>
-      <select id="aspect">
-        <option value="45" selected>4:5</option>
-        <option value="43">4:3</option>
-        <option value="34">3:4</option>
-        <option value="32">3:2</option>
-        <option value="11">1:1</option>
-      </select>
-      <span>Border size (px)</span>
-      <input type="number" id="border-thickness" value="200"/>
-    </div>
-    <br />
-    <canvas id="canvas" class="hidden"></canvas>
-    <br />
-    <button id="download" class="hidden">Download</button>
+    <div id="main">
+      <h1>Polaroid Frame Generator</h1>
+      <input type="file" accept="image/*" id="upload" multiple />
+      <p id="file-limit" class="hidden" style="color: red">
+        ⚠️ Maximum 10 images allowed
+      </p>
+      <div>
+        <span>Choose your template</span>
+        <select id="template">
+          <option value="polaroid" selected>Polaroid</option>
+          <option value="normal">Normal</option>
+        </select>
+      </div>
+      <div>
+        <span>Choose your aspect ratio</span>
+        <select id="aspect">
+          <option value="45" selected>4:5</option>
+          <option value="43">4:3</option>
+          <option value="34">3:4</option>
+          <option value="32">3:2</option>
+          <option value="11">1:1</option>
+        </select>
+        <span>Border size (px)</span>
+        <input type="number" id="border-thickness" value="200" />
+      </div>
+      <br />
+      <br />
+      <div id="slideshow" class="hidden">
+        <button id="prev">⟨ Prev</button>
+        <canvas id="canvas" class="hidden"></canvas>
+        <button id="next">Next ⟩</button>
+      </div>
 
+      <br />
+      <button id="download" class="hidden">Download</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <script src="index.js"></script>
   </body>
 </html>
