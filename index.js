@@ -14,6 +14,14 @@ let originalFileName = 'image_polaroid.jpg';
 let currentFile = null;
 let defaultImageURL = "images/P1150666.jpg"; // local fallback image
 let currentTemplate = template.value;
+const fileLimitMsg = document.getElementById("file-limit");
+
+const slideshow = document.getElementById("slideshow");
+const prevBtn = document.getElementById("prev");
+const nextBtn = document.getElementById("next");
+
+let images = [];
+let currentIndex = 0;
 
 function loadImageFromURL(url, name = "P1150666") {
     const img = new Image();
@@ -30,9 +38,14 @@ function loadImageFromURL(url, name = "P1150666") {
     img.src = url;
 }
 
+function isAspectDisabled(currentTemplate) {
+    return currentTemplate === POLAROID_TEMPLATE;
+}
+
 // Load default image on startup
 window.addEventListener("DOMContentLoaded", () => {
     loadImageFromURL(defaultImageURL, "P1150666.jpg");
+    aspect.disabled = isAspectDisabled(currentTemplate);
     console.log(typeof borderThickness.value);
 });
 
@@ -144,6 +157,7 @@ function polaroidGenerator(file) {
 
 template.addEventListener('change', function (event) {
     currentTemplate = event.target.value;
+    aspect.disabled = isAspectDisabled(currentTemplate);
     generateTemplate(currentTemplate, currentFile);
 });
 
@@ -152,21 +166,82 @@ aspect.addEventListener('change', function (event) {
         borderGenerator(currentFile);
 });
 
-upload.addEventListener('change', function () {
+upload.addEventListener('change', function (event) {
+    const files = Array.from(event.target.files);
+    if (files.length > 10) {
+        fileLimitMsg.classList.remove('hidden');
+        return;
+    }
+    fileLimitMsg.classList.add('hidden');
+
+    images = files.map((file) => {
+        const img = new Image();
+        img.src = URL.createObjectURL(file);
+        return { file, img };
+    });
+
     const file = upload.files[0];
     if (!file) return;
 
-    currentFile = file;
+    currentIndex = 0;
+    slideshow.classList.remove("hidden");
+    downloadBtn.classList.remove("hidden");
+    currentFile = images[currentIndex].file;
     generateTemplate(currentTemplate, currentFile);
+
+    images[currentIndex].onload = () => generateTemplate(currentTemplate, currentFile);
 });
 
-downloadBtn.addEventListener('click', () => {
-    const link = document.createElement('a');
-    const baseName = currentFile.name.replace(/\.[^/.]+$/, '');
-    originalFileName = `${baseName}_${currentTemplate}.jpg`;
-    link.download = originalFileName;
-    link.href = canvas.toDataURL('image/jpeg', 1.0);
-    link.click();
+prevBtn.addEventListener("click", () => {
+    if (images.length > 0) {
+        currentIndex = (currentIndex - 1 + images.length) % images.length;
+        currentFile = images[currentIndex].file;
+        generateTemplate(currentTemplate, currentFile);
+    }
+});
+
+nextBtn.addEventListener("click", () => {
+    if (images.length > 0) {
+        currentIndex = (currentIndex + 1) % images.length;
+        currentFile = images[currentIndex].file;
+        generateTemplate(currentTemplate, currentFile);
+    }
+});
+
+downloadBtn.addEventListener('click', async () => {
+    if (images.length > 1) {
+        const zip = new JSZip();
+        for (let i = 0; i < images.length; i++) {
+            const { file, img } = images[i];
+            const baseName = file.name.replace(/\.[^/.]+$/, '');
+            const fileName = `${baseName}_${currentTemplate}.jpg`;
+            await new Promise((resolve) => {
+                img.onload = () => {
+                    generateTemplate(currentTemplate, file);
+                    canvas.toBlob((blob) => {
+                        zip.file(fileName, blob);
+                        resolve();
+                    }, "image/jpeg", 1);
+                };
+
+                // if already loaded, trigger immediately
+                if (img.complete) {
+                    img.onload();
+                }
+            });
+        }
+
+        zip.generateAsync({ type: "blob" }).then((content) => {
+            saveAs(content, "polaroid-frames.zip");
+        });
+    } else {
+        const link = document.createElement('a');
+        const baseName = currentFile.name.replace(/\.[^/.]+$/, '');
+        originalFileName = `${baseName}_${currentTemplate}.jpg`;
+        link.download = originalFileName;
+        link.href = canvas.toDataURL('image/jpg', 1.0);
+        link.click();
+    }
 });
 
 function debounce(fn, delay) {
