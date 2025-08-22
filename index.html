@@ -9,37 +9,40 @@
     <div id="main">
       <h1>Polaroid Frame Generator</h1>
       <input type="file" accept="image/*" id="upload" multiple />
-      <p id="file-limit" class="hidden" style="color: red">
-        ⚠️ Maximum 10 images allowed
+      <p id="file-limit"  style="color: rgb(185, 158, 0)">
+        ⚠️ Maximum 12 images allowed. The rest will be remove.
       </p>
-      <div>
-        <span>Choose your template</span>
-        <select id="template">
-          <option value="polaroid" selected>Polaroid</option>
-          <option value="normal">Normal</option>
-        </select>
-      </div>
-      <div>
-        <span>Choose your aspect ratio</span>
-        <select id="aspect">
-          <option value="45" selected>4:5</option>
-          <option value="43">4:3</option>
-          <option value="34">3:4</option>
-          <option value="32">3:2</option>
-          <option value="11">1:1</option>
-        </select>
-        <span>Border size (px)</span>
-        <input type="number" id="border-thickness" value="200" />
+      <div class="wrapper">
+        <div>
+          <span>Choose your template</span>
+          <select id="template">
+            <option value="polaroid">Polaroid</option>
+            <option value="normal" selected>Normal</option>
+          </select>
+        </div>
+        <div>
+          <span>Choose your aspect ratio</span>
+          <select id="aspect">
+            <option value="45" selected>4:5</option>
+            <option value="43">4:3</option>
+            <option value="34">3:4</option>
+            <option value="32">3:2</option>
+            <option value="11">1:1</option>
+          </select>
+        </div>
+        <div>
+          <span>Border size (px)</span>
+          <input type="number" id="border-thickness" value="200" />
+        </div>
       </div>
       <br />
       <br />
       <div id="slideshow" class="hidden">
         <button id="prev">⟨ Prev</button>
-        <canvas id="canvas" class="hidden"></canvas>
         <button id="next">Next ⟩</button>
       </div>
-
       <br />
+      <canvas id="canvas" class="hidden"></canvas>
       <button id="download" class="hidden">Download</button>
     </div>
 
