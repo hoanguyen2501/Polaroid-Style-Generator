@@ -23,6 +23,12 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+.wrapper {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
 h1 {
   text-align: center;
   font-size: 1.8rem;
@@ -56,7 +62,7 @@ button {
   display: block;
   max-width: 100%;
   height: auto;
-  margin: 1rem auto;
+  margin: 0 auto;
   border: 1px solid #ddd;
   border-radius: 8px;
 }
@@ -87,7 +93,6 @@ canvas.hidden {
   justify-content: center;
   align-items: center;
   gap: 15px;
-  margin: 20px 0;
 }
 
 #slideshow button {
@@ -97,6 +102,7 @@ canvas.hidden {
   padding: 10px 16px;
   border-radius: 6px;
   cursor: pointer;
+  max-width: 100px;
 }
 
 #slideshow button:hover {

@@ -25,6 +25,7 @@ let currentIndex = 0;
 
 function loadImageFromURL(url, name = "P1150666") {
     const img = new Image();
+    img.src = url;
     img.onload = function () {
         // Convert loaded image to blob and fake a File object
         fetch(url)
@@ -35,7 +36,6 @@ function loadImageFromURL(url, name = "P1150666") {
                 generateTemplate(template.value, currentFile);
             });
     };
-    img.src = url;
 }
 
 function isAspectDisabled(currentTemplate) {
@@ -78,13 +78,15 @@ function parseAspectRatio(aspect) {
 function borderGenerator(file) {
     const targetRatio = parseAspectRatio(aspect.value); // width / height
     const img = new Image();
+    const objectURL = URL.createObjectURL(file);
+    img.src = objectURL;
     img.onload = function () {
         const imgW = img.width;
         const imgH = img.height;
 
         const fullW = imgW + BORDER_SIZE * 2;
         const fullH = imgH + BORDER_SIZE * 2;
-        const fullRatio = fullW / fullH;
+        const fullRatio = imgW / imgH;
 
         let canvasW, canvasH;
 
@@ -101,7 +103,7 @@ function borderGenerator(file) {
         canvas.width = Math.round(canvasW);
         canvas.height = Math.round(canvasH);
 
-        ctx.fillStyle = 'white';
+        ctx.fillStyle = '#fff';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         // Now compute image position
@@ -120,13 +122,15 @@ function borderGenerator(file) {
 
         canvas.classList.remove('hidden');
         downloadBtn.classList.remove('hidden');
+        URL.revokeObjectURL(objectURL); // cleanup
     };
 
-    img.src = URL.createObjectURL(file);
 }
 
 function polaroidGenerator(file) {
     const img = new Image();
+    const objectURL = URL.createObjectURL(file);
+    img.src = objectURL;
     img.onload = function () {
         const imgW = img.width;
         const imgH = img.height;
@@ -151,8 +155,8 @@ function polaroidGenerator(file) {
 
         canvas.classList.remove('hidden');
         downloadBtn.classList.remove('hidden');
+        URL.revokeObjectURL(objectURL); // cleanup
     };
-    img.src = URL.createObjectURL(file);
 }
 
 template.addEventListener('change', function (event) {
@@ -167,16 +171,18 @@ aspect.addEventListener('change', function (event) {
 });
 
 upload.addEventListener('change', function (event) {
-    const files = Array.from(event.target.files);
-    if (files.length > 10) {
-        fileLimitMsg.classList.remove('hidden');
+    const files = Array.from({ length: 12 }, (_, i) => event.target.files[i]);
+    if (files.length === 0) {
         return;
     }
-    fileLimitMsg.classList.add('hidden');
 
     images = files.map((file) => {
         const img = new Image();
-        img.src = URL.createObjectURL(file);
+        const objectURL = URL.createObjectURL(file);
+        img.src = objectURL;
+        img.onload = () => {
+            URL.revokeObjectURL(objectURL); // free after load
+        };
         return { file, img };
     });
 
@@ -189,7 +195,7 @@ upload.addEventListener('change', function (event) {
     currentFile = images[currentIndex].file;
     generateTemplate(currentTemplate, currentFile);
 
-    images[currentIndex].onload = () => generateTemplate(currentTemplate, currentFile);
+    images[currentIndex].img.onload = () => generateTemplate(currentTemplate, currentFile);
 });
 
 prevBtn.addEventListener("click", () => {
@@ -208,41 +214,102 @@ nextBtn.addEventListener("click", () => {
     }
 });
 
-downloadBtn.addEventListener('click', async () => {
+async function renderToCanvas(templateId, file) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        const objectURL = URL.createObjectURL(file);
+        img.src = objectURL;
+        img.onload = () => {
+            // create an offscreen canvas
+            const offCanvas = document.createElement("canvas");
+            const offCtx = offCanvas.getContext("2d");
+
+            if (templateId === POLAROID_TEMPLATE) {
+                // === polaroidGenerator logic but using offCanvas/offCtx ===
+                const imgW = img.width;
+                const imgH = img.height;
+
+                const frameSides = BORDER_SIZE;
+                const frameTop = frameSides;
+                const frameBottom = frameSides * 3;
+
+                offCanvas.width = imgW + frameSides * 2;
+                offCanvas.height = imgH + frameTop + frameBottom;
+
+                offCtx.fillStyle = "white";
+                offCtx.fillRect(0, 0, offCanvas.width, offCanvas.height);
+                offCtx.drawImage(img, frameSides, frameTop, imgW, imgH);
+            } else {
+                // === borderGenerator logic but using offCanvas/offCtx ===
+                const targetRatio = parseAspectRatio(aspect.value);
+                const imgW = img.width;
+                const imgH = img.height;
+
+                const fullW = imgW + BORDER_SIZE * 2;
+                const fullH = imgH + BORDER_SIZE * 2;
+                const fullRatio = imgW / imgH;
+
+                let canvasW, canvasH;
+                if (fullRatio > targetRatio) {
+                    canvasW = fullW;
+                    canvasH = canvasW / targetRatio;
+                } else {
+                    canvasH = fullH;
+                    canvasW = canvasH * targetRatio;
+                }
+
+                offCanvas.width = Math.round(canvasW);
+                offCanvas.height = Math.round(canvasH);
+
+                offCtx.fillStyle = "#fff";
+                offCtx.fillRect(0, 0, offCanvas.width, offCanvas.height);
+
+                const availableW = canvasW - BORDER_SIZE * 2;
+                const availableH = canvasH - BORDER_SIZE * 2;
+
+                const scale = Math.min(availableW / imgW, availableH / imgH);
+                const drawW = imgW * scale;
+                const drawH = imgH * scale;
+
+                const offsetX = (canvasW - drawW) / 2;
+                const offsetY = (canvasH - drawH) / 2;
+
+                offCtx.drawImage(img, offsetX, offsetY, drawW, drawH);
+            }
+
+            offCanvas.toBlob((blob) => {
+                resolve(blob);
+                URL.revokeObjectURL(objectURL); // cleanup here
+            }, "image/jpeg", 1);
+        };
+    });
+}
+
+downloadBtn.addEventListener("click", async () => {
     if (images.length > 1) {
         const zip = new JSZip();
-        for (let i = 0; i < images.length; i++) {
-            const { file, img } = images[i];
-            const baseName = file.name.replace(/\.[^/.]+$/, '');
-            const fileName = `${baseName}_${currentTemplate}.jpg`;
-            await new Promise((resolve) => {
-                img.onload = () => {
-                    generateTemplate(currentTemplate, file);
-                    canvas.toBlob((blob) => {
-                        zip.file(fileName, blob);
-                        resolve();
-                    }, "image/jpeg", 1);
-                };
 
-                // if already loaded, trigger immediately
-                if (img.complete) {
-                    img.onload();
-                }
-            });
+        for (let i = 0; i < images.length; i++) {
+            const { file } = images[i];
+            const baseName = file.name.replace(/\.[^/.]+$/, "");
+            const fileName = `${baseName}_${currentTemplate}.jpg`;
+
+            const blob = await renderToCanvas(currentTemplate, file);
+            zip.file(fileName, blob);
         }
 
-        zip.generateAsync({ type: "blob" }).then((content) => {
-            saveAs(content, "polaroid-frames.zip");
-        });
+        const content = await zip.generateAsync({ type: "blob" });
+        saveAs(content, "polaroid-frames.zip");
     } else {
-        const link = document.createElement('a');
-        const baseName = currentFile.name.replace(/\.[^/.]+$/, '');
-        originalFileName = `${baseName}_${currentTemplate}.jpg`;
+        const link = document.createElement("a");
+        const baseName = currentFile.name.replace(/\.[^/.]+$/, "");
+        const originalFileName = `${baseName}_${currentTemplate}.jpg`;
         link.download = originalFileName;
-        link.href = canvas.toDataURL('image/jpg', 1.0);
+        link.href = canvas.toDataURL("image/jpeg", 1.0);
         link.click();
     }
 });
+
 
 function debounce(fn, delay) {
     let timeoutId;
