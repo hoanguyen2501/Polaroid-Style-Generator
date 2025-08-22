@@ -220,6 +220,7 @@ async function renderToCanvas(templateId, file) {
         const objectURL = URL.createObjectURL(file);
         img.src = objectURL;
         img.onload = () => {
+            generateTemplate(templateId, file);
             // create an offscreen canvas
             const offCanvas = document.createElement("canvas");
             const offCtx = offCanvas.getContext("2d");
@@ -293,7 +294,6 @@ downloadBtn.addEventListener("click", async () => {
             const { file } = images[i];
             const baseName = file.name.replace(/\.[^/.]+$/, "");
             const fileName = `${baseName}_${currentTemplate}.jpg`;
-
             const blob = await renderToCanvas(currentTemplate, file);
             zip.file(fileName, blob);
         }
