@@ -171,7 +171,8 @@ aspect.addEventListener('change', function (event) {
 });
 
 upload.addEventListener('change', function (event) {
-    const files = Array.from({ length: 12 }, (_, i) => event.target.files[i]);
+    const fileCount = event.target.files.length > 12 ? 12 : event.target.files.length;
+    const files = Array.from({ length: fileCount }, (_, i) => event.target.files[i]);
     if (files.length === 0) {
         return;
     }
